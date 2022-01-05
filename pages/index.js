@@ -1,14 +1,58 @@
-import React, { useState } from 'react'
+
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import { OneOffQrScanner } from 'react-webcam-qr-scanner.ts'
+import React, { useState, useRef, useEffect } from 'react';
+import { QrReader } from '@blackbox-vision/react-qr-reader';
+
+const qrStyle = {
+  //zIndex: 1,
+  width: "100vw",
+  // width: "65vw",
+  //height: "100vh",
+  top: "0",
+  left: "0",
+  overflowY: "hidden",
+  overflowX: "hidden",
+  objectFit: "cover"
+  //position: "static"
+};
+
 
 export default function Home() {
 
-  const [qrCode, setQrCode] = React.useState('')
-  const yey = (x) => console.log(x) 
-  const qr_scn = () => {}
+
+  const [data, setData] = useState("No result");
+  const [facingMode, setFacingMode] = useState("environment");
+  const [isQrShown, setIsQrShown] = useState(true);
+  const [isCameraOpen, setIsCameraOpen] = useState(true);
+
+  const changeFacingMode = () => {
+    facingMode === "user"
+      ? setFacingMode("environment")
+      : setFacingMode("user");
+
+    setIsQrShown(false);
+  };
+
+  useEffect(() => {
+    setIsQrShown(true);
+  }, [isQrShown]);
+
+  const changeQrView = () => {
+    setIsQrShown(() => !isQrShown);
+  };
+  useEffect(() => {
+    (async function effectDetectCamera() {
+      // await detectCamera();
+    })();
+    // if (userData !== "yes") {
+    //   (async function effectDetectCamera() {
+    //     await detectCamera();
+    //   })();
+    // } else setPermissionGranted(true)
+  }, []);
+
 
 
   return (
@@ -20,15 +64,30 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+        <h1 className={styles.title}><a href="https://nextjs.org">Qr scner</a>
         </h1>
-        <button onClick={qr_scn}>cpture</button>
-        <OneOffQrScanner
-        onQrCode={setQrCode}
-        hidden={false} /* optional: set true to hide the video-preview */
-      />
-      </main>
+        <button onClick={changeFacingMode}>change camera </button>
+      <button onClick={changeQrView}>change view </button>
+      {isQrShown && isCameraOpen && (
+        <QrReader
+          onResult={(result, error) => {
+            if (!!result) {
+              setData(result?.text);
+            }
+
+            if (!!error) {
+            }
+          }}
+          style={{ width: "100%" }}
+          videoContainerStyle={qrStyle}
+          scanDelay={100}
+          videoStyle={{ height: "auto" }}
+          constraints={{ facingMode: facingMode }}
+        />
+      )}
+
+      <p>{data}</p>
+        </main>
 
       <footer className={styles.footer}>
         <a
